@@ -5,7 +5,6 @@ on click (mirrors the "كشف حساب" pattern from the reference software).
 
 import customtkinter as ctk
 import database as db
-from rtl import rtl
 from views.party_detail_dialog import PartyDetailDialog
 
 
@@ -66,7 +65,7 @@ class CustomersView(ctk.CTkFrame):
         )
         row.pack(fill="x", pady=4)
 
-        text = rtl(customer["name"])
+        text = customer["name"]
         if customer["phone"]:
             text += f"   |   {customer['phone']}"
         text += f"\n{customer['order_count']} أوردر   —   إجمالي {customer['total_spend']:,.2f}"

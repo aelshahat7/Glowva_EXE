@@ -19,6 +19,7 @@ import tkinter as tk
 import customtkinter as ctk
 import database as db
 from rtl import rtl
+from services.startup import initialize_database
 from views.orders_view import OrdersView
 from views.purchases_view import PurchasesView
 from views.products_view import ProductsView
@@ -63,191 +64,198 @@ class GlowvaApp(ctk.CTk):
         self.minsize(900, 600)
 
         db.init_db()
+        initialize_database()
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=0)
 
-        self.grid_rowconfigure(0, weight=0)  # الشريط العلوي
+        # الشريط العلوي متعطل مؤقتًا - شوفي _build_menu_bar تحت لو عايزة ترجعيه
+        # self.grid_rowconfigure(0, weight=0)  # الشريط العلوي
         self.grid_rowconfigure(1, weight=1)  # محتوى البرنامج
 
-        self._build_menu_bar()
+        # self._build_menu_bar()
         self._build_sidebar()
         self._build_content_area()
 
-    def _build_menu_bar(self):
+    # الشريط العلوي (Top Menu Bar) متعطل مؤقتًا بناءً على طلب المستخدم -
+    # الكود جاهز هنا لو عايزة ترجعيه تاني، بس فكي التعليق عن الميثودز
+    # الأربعة دي (_build_menu_bar, _show_dropdown, _close_dropdown_and_run,
+    # _close_dropdown) وعن نداء self._build_menu_bar() فوق في __init__.
+    #
+    # def _build_menu_bar(self):
+    #
+    #         self.topbar = ctk.CTkFrame(
+    #             self,
+    #             height=52,
+    #             corner_radius=0,
+    #             fg_color=("white", "gray15")
+    #         )
+    #
+    #         self.topbar.grid(
+    #             row=0,
+    #             column=0,
+    #             columnspan=2,
+    #             sticky="ew"
+    #         )
+    #
+    #         self.topbar.grid_propagate(False)
+    #
+    #         # القوائم: أول عنصر يظهر أقصى اليمين
+    #         menu_items = [
+    #             (
+    #                 "الرئيسية",
+    #                 [
+    #                     ("لوحة التحكم", lambda: self.navigate("Dashboard"))
+    #                 ]
+    #             ),
+    #             (
+    #                 "المبيعات",
+    #                 [
+    #                     ("الأوردرات", lambda: self.navigate("Orders"))
+    #                 ]
+    #             ),
+    #             (
+    #                 "المشتريات",
+    #                 [
+    #                     ("المشتريات", lambda: self.navigate("Purchases"))
+    #                 ]
+    #             ),
+    #             (
+    #                 "الأصناف والمخزون",
+    #                 [
+    #                     ("الأصناف", lambda: self.navigate("Products")),
+    #                     ("المخزون", lambda: self.navigate("Inventory"))
+    #                 ]
+    #             ),
+    #             (
+    #                 "الموردون",
+    #                 [
+    #                     ("الموردون", lambda: self.navigate("Suppliers"))
+    #                 ]
+    #             ),
+    #             (
+    #                 "العملاء",
+    #                 [
+    #                     ("العملاء", lambda: self.navigate("Customers"))
+    #                 ]
+    #             ),
+    #             (
+    #                 "الحسابات",
+    #                 [
+    #                     ("صرف الأرباح", lambda: self.navigate("ProfitPayout"))
+    #                 ]
+    #             ),
+    #         ]
+    #
+    #         for title, items in menu_items:
+    #
+    #             btn = ctk.CTkButton(
+    #                 self.topbar,
+    #                 text=rtl(title) + "  ▾",
+    #                 width=125,
+    #                 height=34,
+    #                 corner_radius=6,
+    #                 fg_color="transparent",
+    #                 hover_color=("gray85", "gray25"),
+    #                 text_color=("gray15", "gray90"),
+    #                 font=ctk.CTkFont(size=13),
+    #                 command=lambda t=title, i=items: self._show_dropdown(t, i)
+    #             )
+    #
+    #             # أول زر يمين، والباقي يتجه لليسار
+    #             btn.pack(
+    #                 side="right",
+    #                 padx=2,
+    #                 pady=9
+    #             )
+    #
+    # def _show_dropdown(self, title, items):
+    #
+    #     # إغلاق أي قائمة مفتوحة
+    #     if hasattr(self, "_active_dropdown"):
+    #         try:
+    #             self._active_dropdown.destroy()
+    #         except:
+    #             pass
+    #
+    #     # نافذة القائمة
+    #     dropdown = ctk.CTkToplevel(self)
+    #     self._active_dropdown = dropdown
+    #
+    #     dropdown.overrideredirect(True)
+    #     dropdown.resizable(False, False)
+    #
+    #     frame = ctk.CTkFrame(
+    #         dropdown,
+    #         corner_radius=8,
+    #         fg_color=("white", "gray20"),
+    #         border_width=1,
+    #         border_color=("gray80", "gray30")
+    #     )
+    #
+    #     frame.pack(
+    #         fill="both",
+    #         expand=True
+    #     )
+    #
+    #     for text, command in items:
+    #
+    #         btn = ctk.CTkButton(
+    #             frame,
+    #             text=rtl(text),
+    #             width=190,
+    #             height=38,
+    #             corner_radius=0,
+    #             fg_color="transparent",
+    #             hover_color=("gray90", "gray25"),
+    #             text_color=("gray15", "gray90"),
+    #             anchor="e",
+    #             font=ctk.CTkFont(size=13),
+    #             command=lambda c=command: self._close_dropdown_and_run(
+    #                 dropdown,
+    #                 c
+    #             )
+    #         )
+    #
+    #         btn.pack(
+    #             fill="x",
+    #             padx=4,
+    #             pady=2
+    #         )
+    #
+    #     # مكان القائمة تحت الشريط العلوي
+    #     self.update_idletasks()
+    #
+    #     x = self.winfo_pointerx()
+    #     y = self.winfo_rooty() + 52
+    #
+    #     dropdown.geometry(
+    #         f"+{x - 190}+{y}"
+    #     )
+    #
+    #     dropdown.focus_force()
+    #
+    #     dropdown.bind(
+    #         "<FocusOut>",
+    #         lambda e: self._close_dropdown(dropdown)
+    #     )
+    #
+    # def _close_dropdown_and_run(self, dropdown, command):
+    #
+    #     try:
+    #         dropdown.destroy()
+    #     except:
+    #         pass
+    #
+    #     command()
+    #
+    # def _close_dropdown(self, dropdown):
+    #
+    #     try:
+    #         dropdown.destroy()
+    #     except:
+    #         pass
 
-            self.topbar = ctk.CTkFrame(
-                self,
-                height=52,
-                corner_radius=0,
-                fg_color=("white", "gray15")
-            )
-
-            self.topbar.grid(
-                row=0,
-                column=0,
-                columnspan=2,
-                sticky="ew"
-            )
-
-            self.topbar.grid_propagate(False)
-
-            # القوائم: أول عنصر يظهر أقصى اليمين
-            menu_items = [
-                (
-                    "الرئيسية",
-                    [
-                        ("لوحة التحكم", lambda: self.navigate("Dashboard"))
-                    ]
-                ),
-                (
-                    "المبيعات",
-                    [
-                        ("الأوردرات", lambda: self.navigate("Orders"))
-                    ]
-                ),
-                (
-                    "المشتريات",
-                    [
-                        ("المشتريات", lambda: self.navigate("Purchases"))
-                    ]
-                ),
-                (
-                    "الأصناف والمخزون",
-                    [
-                        ("الأصناف", lambda: self.navigate("Products")),
-                        ("المخزون", lambda: self.navigate("Inventory"))
-                    ]
-                ),
-                (
-                    "الموردون",
-                    [
-                        ("الموردون", lambda: self.navigate("Suppliers"))
-                    ]
-                ),
-                (
-                    "العملاء",
-                    [
-                        ("العملاء", lambda: self.navigate("Customers"))
-                    ]
-                ),
-                (
-                    "الحسابات",
-                    [
-                        ("صرف الأرباح", lambda: self.navigate("ProfitPayout"))
-                    ]
-                ),
-            ]
-
-            for title, items in menu_items:
-
-                btn = ctk.CTkButton(
-                    self.topbar,
-                    text=rtl(title) + "  ▾",
-                    width=125,
-                    height=34,
-                    corner_radius=6,
-                    fg_color="transparent",
-                    hover_color=("gray85", "gray25"),
-                    text_color=("gray15", "gray90"),
-                    font=ctk.CTkFont(size=13),
-                    command=lambda t=title, i=items: self._show_dropdown(t, i)
-                )
-
-                # أول زر يمين، والباقي يتجه لليسار
-                btn.pack(
-                    side="right",
-                    padx=2,
-                    pady=9
-                )
-
-    def _show_dropdown(self, title, items):
-
-        # إغلاق أي قائمة مفتوحة
-        if hasattr(self, "_active_dropdown"):
-            try:
-                self._active_dropdown.destroy()
-            except:
-                pass
-
-        # نافذة القائمة
-        dropdown = ctk.CTkToplevel(self)
-        self._active_dropdown = dropdown
-
-        dropdown.overrideredirect(True)
-        dropdown.resizable(False, False)
-
-        frame = ctk.CTkFrame(
-            dropdown,
-            corner_radius=8,
-            fg_color=("white", "gray20"),
-            border_width=1,
-            border_color=("gray80", "gray30")
-        )
-
-        frame.pack(
-            fill="both",
-            expand=True
-        )
-
-        for text, command in items:
-
-            btn = ctk.CTkButton(
-                frame,
-                text=rtl(text),
-                width=190,
-                height=38,
-                corner_radius=0,
-                fg_color="transparent",
-                hover_color=("gray90", "gray25"),
-                text_color=("gray15", "gray90"),
-                anchor="e",
-                font=ctk.CTkFont(size=13),
-                command=lambda c=command: self._close_dropdown_and_run(
-                    dropdown,
-                    c
-                )
-            )
-
-            btn.pack(
-                fill="x",
-                padx=4,
-                pady=2
-            )
-
-        # مكان القائمة تحت الشريط العلوي
-        self.update_idletasks()
-
-        x = self.winfo_pointerx()
-        y = self.winfo_rooty() + 52
-
-        dropdown.geometry(
-            f"+{x - 190}+{y}"
-        )
-
-        dropdown.focus_force()
-
-        dropdown.bind(
-            "<FocusOut>",
-            lambda e: self._close_dropdown(dropdown)
-        )
-
-    def _close_dropdown_and_run(self, dropdown, command):
-
-        try:
-            dropdown.destroy()
-        except:
-            pass
-
-        command()
-
-    def _close_dropdown(self, dropdown):
-
-        try:
-            dropdown.destroy()
-        except:
-            pass
-            
     def _build_sidebar(self):
 
         sidebar = ctk.CTkFrame(

@@ -5,7 +5,6 @@ we buy from, how much total, and their full purchase history on click.
 
 import customtkinter as ctk
 import database as db
-from rtl import rtl
 from views.party_detail_dialog import PartyDetailDialog
 
 
@@ -63,7 +62,7 @@ class SuppliersView(ctk.CTkFrame):
         )
         row.pack(fill="x", pady=4)
 
-        text = rtl(supplier["name"])
+        text = supplier["name"]
         if supplier["contact_info"]:
             text += f"   |   {supplier['contact_info']}"
         text += f"\n{supplier['purchase_count']} فاتورة توريد   —   إجمالي {supplier['total_purchased']:,.2f}"

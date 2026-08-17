@@ -1,0 +1,3 @@
+customtkinter
+arabic-reshaper
+python-bidi

@@ -111,7 +111,7 @@ class OrdersView(ctk.CTkFrame):
         self.line_error.grid(row=r, column=1, columnspan=2, padx=10, sticky="e")
 
         r += 1
-        ctk.CTkButton(form, text="➕ أضيفي للفاتورة", command=self._add_line).grid(
+        ctk.CTkButton(form, text=rtl("➕ أضيفي للفاتورة"), command=self._add_line).grid(
             row=r, column=1, columnspan=2, padx=10, pady=(4, 10), sticky="ew")
 
         r += 1
@@ -135,7 +135,7 @@ class OrdersView(ctk.CTkFrame):
 
         r += 1
         self.total_label = ctk.CTkLabel(
-            form, text=f"{rtl('الإجمالي')}: 0.00", font=ctk.CTkFont(size=17, weight="bold")
+            form, text=rtl("الإجمالي: 0.00"), font=ctk.CTkFont(size=17, weight="bold")
         )
         self.total_label.grid(row=r, column=1, columnspan=2, padx=10, pady=(10, 6))
 
@@ -165,7 +165,7 @@ class OrdersView(ctk.CTkFrame):
 
         r += 1
         ctk.CTkButton(
-            form, text="💾 احفظي الأوردر", fg_color="#27AE60", hover_color="#1E8449",
+            form, text=rtl("💾 احفظي الأوردر"), fg_color="#27AE60", hover_color="#1E8449",
             font=ctk.CTkFont(size=14, weight="bold"), height=38,
             command=self._save_order
         ).grid(row=r, column=1, columnspan=2, padx=10, pady=(10, 15), sticky="ew")
@@ -258,7 +258,7 @@ class OrdersView(ctk.CTkFrame):
             discount = float(self.discount_entry.get() or 0)
         except ValueError:
             discount = 0
-        self.total_label.configure(text=f"{rtl('الإجمالي')}: {subtotal - discount:,.2f}")
+        self.total_label.configure(text=rtl(f"الإجمالي: {subtotal - discount:,.2f}"))
 
     def _remove_line(self, index):
         del self.cart[index]

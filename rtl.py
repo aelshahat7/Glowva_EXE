@@ -1,37 +1,72 @@
-"""Arabic text direction helpers for Glowva ERP.
+"""Arabic text shaping and right-to-left display helpers for Glowva ERP.
 
-Tkinter/CustomTkinter does not provide a reliable application-wide RTL
-layout mode. This module therefore handles TEXT direction only.
-
-We use an explicit RTL embedding mark (RLE/PDF) instead of reordering
-characters. This keeps the stored Arabic string unchanged while telling
-the text renderer to treat the phrase as a right-to-left run.
+This module handles TEXT direction only. It does not modify grid(), pack(),
+or any Tk/CustomTkinter geometry behavior.
 """
 
-RLE = "\u202B"  # Right-to-Left Embedding
-PDF = "\u202C"  # Pop Directional Formatting
+try:
+    import arabic_reshaper
+    from bidi.algorithm import get_display
+except ImportError:  # pragma: no cover
+    arabic_reshaper = None
+    get_display = None
+
+RLE = "\u202B"
+PDF = "\u202C"
+
+_ARABIC_RANGES = (
+    ("\u0600", "\u06FF"),
+    ("\u0750", "\u077F"),
+    ("\u08A0", "\u08FF"),
+    ("\uFB50", "\uFDFF"),
+    ("\uFE70", "\uFEFF"),
+)
+
+# Values displayed through rtl() may later come back through unrtl(),
+# especially ComboBox selections. Keep the original logical value so
+# nothing visually-shaped is written into the database.
+_DISPLAY_TO_LOGICAL = {}
+
+
+def _contains_arabic(text):
+    return any(
+        start <= char <= end
+        for char in str(text)
+        for start, end in _ARABIC_RANGES
+    )
 
 
 def rtl(text):
-    """Return a display-safe RTL string without changing stored data."""
+    """Return text rendered in correct Arabic visual order."""
     if text is None:
         return ""
 
-    text = str(text)
+    logical = str(text)
 
-    if not text.strip():
-        return ""
+    if not logical.strip() or not _contains_arabic(logical):
+        return logical
 
-    # Avoid nesting our directional marks when a value is already wrapped.
-    if text.startswith(RLE) and text.endswith(PDF):
-        return text
+    if arabic_reshaper is None or get_display is None:
+        return f"{RLE}{logical}{PDF}"
 
-    return f"{RLE}{text}{PDF}"
+    try:
+        reshaped = arabic_reshaper.reshape(logical)
+        visual = get_display(reshaped)
+    except Exception:
+        return f"{RLE}{logical}{PDF}"
+
+    _DISPLAY_TO_LOGICAL[visual] = logical
+    return visual
 
 
 def unrtl(text):
-    """Remove directional control characters before storing/comparing data."""
+    """Return the original logical string for text produced by rtl()."""
     if text is None:
         return ""
 
-    return str(text).replace(RLE, "").replace(PDF, "")
+    value = str(text)
+
+    if value in _DISPLAY_TO_LOGICAL:
+        return _DISPLAY_TO_LOGICAL[value]
+
+    return value.replace(RLE, "").replace(PDF, "")

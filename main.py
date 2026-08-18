@@ -486,7 +486,7 @@ class GlowvaApp(ctk.CTk):
             for item in low_items[:5]:
                 ctk.CTkLabel(
                     warn_frame,
-                    text=f"• {item['product_name']} ({rtl('المتبقي')}: {item['current_stock']:.0f})",
+                    text=rtl(f"{item['product_name']} (المتبقي: {item['current_stock']:.0f})"),
                     text_color="#C0392B"
                 ).pack(padx=25, pady=2, anchor="e")
             warn_frame.pack_slaves()[-1].pack(pady=(2, 12))

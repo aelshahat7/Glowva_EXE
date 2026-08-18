@@ -117,7 +117,7 @@ class OrdersView(ctk.CTkFrame):
         self.line_error.grid(row=r, column=1, columnspan=2, padx=10, sticky="e")
 
         r += 1
-        ctk.CTkButton(form, text=rtl("للفاتورة أضف"), command=self._add_line).grid(
+        ctk.CTkButton(form, text=rtl("اضف للفاتورة"), command=self._add_line).grid(
             row=r, column=1, columnspan=2, padx=10, pady=(4, 10), sticky="ew")
 
         r += 1
@@ -176,7 +176,7 @@ class OrdersView(ctk.CTkFrame):
 
         r += 1
         ctk.CTkButton(
-            form, text=rtl("الاوردر احفظ"), fg_color="#27AE60", hover_color="#1E8449",
+            form, text="احفظ الفاتورة", fg_color="#27AE60", hover_color="#1E8449",
             font=ctk.CTkFont(size=14, weight="bold"), height=38,
             command=self._save_order
         ).grid(row=r, column=1, columnspan=2, padx=10, pady=(10, 15), sticky="ew")

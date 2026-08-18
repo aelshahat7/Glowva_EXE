@@ -59,8 +59,8 @@ class ProfitPayoutView(ctk.CTkFrame):
     def _build_body(self):
         body = ctk.CTkFrame(self, fg_color="transparent")
         body.grid(row=2, column=0, padx=30, pady=(0, 20), sticky="nsew")
-        body.grid_columnconfigure(0, weight=2)
-        body.grid_columnconfigure(1, weight=3)
+        body.grid_columnconfigure(0, weight=3)
+        body.grid_columnconfigure(1, weight=2)
         body.grid_rowconfigure(0, weight=1)
 
         self._build_form(body)
@@ -68,7 +68,7 @@ class ProfitPayoutView(ctk.CTkFrame):
 
     def _build_form(self, parent):
         form = ctk.CTkFrame(parent, corner_radius=10)
-        form.grid(row=0, column=0, padx=(0, 10), sticky="nsew")
+        form.grid(row=0, column=1, padx=(10, 0), sticky="nsew")
         form.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
@@ -122,7 +122,7 @@ class ProfitPayoutView(ctk.CTkFrame):
 
     def _build_history(self, parent):
         panel = ctk.CTkFrame(parent, corner_radius=10)
-        panel.grid(row=0, column=1, sticky="nsew")
+        panel.grid(row=0, column=0, sticky="nsew")
 
         ctk.CTkLabel(
             panel, text="آخر عمليات الصرف", font=ctk.CTkFont(size=16, weight="bold")

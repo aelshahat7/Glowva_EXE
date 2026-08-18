@@ -28,7 +28,7 @@ class PurchasesView(ctk.CTkFrame):
     def _build_header(self):
         ctk.CTkLabel(
             self, text="المشتريات", font=ctk.CTkFont(size=24, weight="bold")
-        ).grid(row=0, column=0, padx=30, pady=(25, 15), sticky="w")
+        ).grid(row=0, column=0, padx=30, pady=(25, 15), sticky="e")
 
     def _build_body(self):
         body = ctk.CTkFrame(self, fg_color="transparent")
@@ -44,7 +44,7 @@ class PurchasesView(ctk.CTkFrame):
 
     def _build_form(self, parent):
         form = ctk.CTkScrollableFrame(parent, corner_radius=10)
-        form.grid(row=0, column=0, padx=(0, 10), sticky="nsew")
+        form.grid(row=0, column=1, padx=(10, 0), sticky="nsew")
         form.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
@@ -238,7 +238,7 @@ class PurchasesView(ctk.CTkFrame):
 
     def _build_recent_panel(self, parent):
         panel = ctk.CTkFrame(parent, corner_radius=10)
-        panel.grid(row=0, column=1, sticky="nsew")
+        panel.grid(row=0, column=0, sticky="nsew")
 
         ctk.CTkLabel(
             panel, text="آخر فواتير التوريد", font=ctk.CTkFont(size=16, weight="bold")

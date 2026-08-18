@@ -58,7 +58,7 @@ class ProductsView(ctk.CTkFrame):
         ).grid(
             row=0,
             column=0,
-            sticky="w"
+            sticky="e"
         )
 
         ctk.CTkButton(
@@ -84,7 +84,7 @@ class ProductsView(ctk.CTkFrame):
             placeholder_text="دوّري باسم الصنف أو الفئة...",
             font=ctk.CTkFont(size=14)
         )
-
+        self.search_entry.configure(justify="right")
         self.search_entry.grid(
             row=1,
             column=0,
@@ -459,7 +459,7 @@ class ProductsView(ctk.CTkFrame):
             row=0,
             column=0,
             rowspan=2,
-            sticky="w"
+            sticky="e"
         )
 
         stats = ctk.CTkFrame(

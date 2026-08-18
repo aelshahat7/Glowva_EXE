@@ -32,95 +32,95 @@ class OrdersView(ctk.CTkFrame):
         header = ctk.CTkLabel(
             self, text=rtl("الأوردرات"), font=ctk.CTkFont(size=24, weight="bold")
         )
-        header.grid(row=0, column=0, padx=30, pady=(25, 15), sticky="w")
+        header.grid(row=0, column=0, padx=30, pady=(25, 15), sticky="e")
 
     def _build_body(self):
         body = ctk.CTkFrame(self, fg_color="transparent")
         body.grid(row=1, column=0, padx=30, pady=(0, 20), sticky="nsew")
-        body.grid_columnconfigure(0, weight=3)
-        body.grid_columnconfigure(1, weight=2)
+        body.grid_columnconfigure(0, weight=2)
+        body.grid_columnconfigure(1, weight=3)
         body.grid_rowconfigure(0, weight=1)
 
-        self._build_form(body)
         self._build_recent_panel(body)
+        self._build_form(body)
 
     # ---------------- New order form ----------------
 
     def _build_form(self, parent):
         form = ctk.CTkScrollableFrame(parent, corner_radius=10)
-        form.grid(row=0, column=0, padx=(0, 10), sticky="nsew")
+        form.grid(row=0, column=1, padx=(10, 0), sticky="nsew")
         form.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
             form, text=rtl("أوردر جديد"), font=ctk.CTkFont(size=16, weight="bold")
-        ).grid(row=0, column=0, columnspan=2, padx=10, pady=(10, 15), sticky="e")
+        ).grid(row=0, column=1, columnspan=2, padx=10, pady=(10, 15), sticky="e")
 
         r = 1
-        ctk.CTkLabel(form, text=rtl("التاريخ")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("التاريخ")).grid(row=r, column=1, padx=10, pady=6, sticky="e")
         self.date_entry = ctk.CTkEntry(form)
         self.date_entry.insert(0, date.today().isoformat())
-        self.date_entry.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
+        self.date_entry.grid(row=r, column=0, padx=10, pady=6, sticky="ew")
 
         r += 1
-        ctk.CTkLabel(form, text=rtl("اسم العميل")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("اسم العميل")).grid(row=r, column=1, padx=10, pady=6, sticky="e")
         self.customer_combo = ctk.CTkComboBox(form, values=self._customer_names())
         self.customer_combo.set("")
-        self.customer_combo.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
+        self.customer_combo.grid(row=r, column=0, padx=10, pady=6, sticky="ew")
 
         r += 1
-        ctk.CTkLabel(form, text=rtl("رقم الموبايل")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("رقم الموبايل")).grid(row=r, column=1, padx=10, pady=6, sticky="e")
         self.phone_entry = ctk.CTkEntry(form)
-        self.phone_entry.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
+        self.phone_entry.grid(row=r, column=0, padx=10, pady=6, sticky="ew")
 
         r += 1
         ctk.CTkFrame(form, height=2, fg_color=("gray80", "gray30")).grid(
-            row=r, column=0, columnspan=2, sticky="ew", padx=10, pady=12)
+            row=r, column=1, columnspan=2, sticky="ew", padx=10, pady=12)
 
         r += 1
         ctk.CTkLabel(
             form, text=rtl("إضافة صنف للفاتورة"), font=ctk.CTkFont(size=14, weight="bold")
-        ).grid(row=r, column=0, columnspan=2, padx=10, pady=(0, 8), sticky="e")
+        ).grid(row=r, column=1, columnspan=2, padx=10, pady=(0, 8), sticky="e")
 
         r += 1
-        ctk.CTkLabel(form, text=rtl("الصنف")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("الصنف")).grid(row=r, column=1, padx=10, pady=6, sticky="e")
         product_row = ctk.CTkFrame(form, fg_color="transparent")
-        product_row.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
+        product_row.grid(row=r, column=0, padx=10, pady=6, sticky="ew")
         product_row.grid_columnconfigure(0, weight=1)
 
         self.product_entry = ctk.CTkEntry(
             product_row, placeholder_text=rtl("اكتبي اسم الصنف أو دوّري بـ🔍")
         )
-        self.product_entry.grid(row=0, column=0, sticky="ew")
+        self.product_entry.grid(row=0, column=1, sticky="ew")
         ctk.CTkButton(
             product_row, text="🔍", width=36, command=self._open_search
         ).grid(row=0, column=1, padx=(6, 0))
 
         r += 1
-        ctk.CTkLabel(form, text=rtl("الكمية")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("الكمية")).grid(row=r, column=1, padx=10, pady=6, sticky="e")
         self.qty_entry = ctk.CTkEntry(form)
         self.qty_entry.insert(0, "1")
-        self.qty_entry.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
+        self.qty_entry.grid(row=r, column=0, padx=10, pady=6, sticky="ew")
 
         r += 1
-        ctk.CTkLabel(form, text=rtl("سعر الوحدة")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("سعر الوحدة")).grid(row=r, column=1, padx=10, pady=6, sticky="e")
         self.price_entry = ctk.CTkEntry(form)
-        self.price_entry.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
+        self.price_entry.grid(row=r, column=0, padx=10, pady=6, sticky="ew")
 
         r += 1
         self.line_error = ctk.CTkLabel(form, text="", text_color="#C0392B")
-        self.line_error.grid(row=r, column=0, columnspan=2, padx=10, sticky="e")
+        self.line_error.grid(row=r, column=1, columnspan=2, padx=10, sticky="e")
 
         r += 1
         ctk.CTkButton(form, text="➕ أضيفي للفاتورة", command=self._add_line).grid(
-            row=r, column=0, columnspan=2, padx=10, pady=(4, 10), sticky="ew")
+            row=r, column=1, columnspan=2, padx=10, pady=(4, 10), sticky="ew")
 
         r += 1
         cart_container = ctk.CTkFrame(form, fg_color=("gray92", "gray17"), corner_radius=8)
-        cart_container.grid(row=r, column=0, columnspan=2, padx=10, pady=6, sticky="ew")
+        cart_container.grid(row=r, column=1, columnspan=2, padx=10, pady=6, sticky="ew")
         cart_container.grid_columnconfigure(0, weight=1)
 
         self.cart_header = ctk.CTkFrame(cart_container, fg_color=("gray85", "gray22"), corner_radius=6)
-        self.cart_header.grid(row=0, column=0, sticky="ew", padx=6, pady=(6, 0))
+        self.cart_header.grid(row=0, column=1, sticky="ew", padx=6, pady=(6, 0))
         for col, weight in enumerate(CART_COLUMN_WEIGHTS):
             self.cart_header.grid_columnconfigure(col, weight=weight)
         for col, text in enumerate(["", rtl("الصنف"), rtl("الكمية"), rtl("السعر"), rtl("الإجمالي")]):
@@ -129,7 +129,7 @@ class OrdersView(ctk.CTkFrame):
             ).grid(row=0, column=col, padx=6, pady=4, sticky="ew")
 
         self.cart_frame = ctk.CTkFrame(cart_container, fg_color="transparent")
-        self.cart_frame.grid(row=1, column=0, sticky="ew", padx=6, pady=(0, 6))
+        self.cart_frame.grid(row=1, column=1, sticky="ew", padx=6, pady=(0, 6))
         for col, weight in enumerate(CART_COLUMN_WEIGHTS):
             self.cart_frame.grid_columnconfigure(col, weight=weight)
 
@@ -137,38 +137,38 @@ class OrdersView(ctk.CTkFrame):
         self.total_label = ctk.CTkLabel(
             form, text=f"{rtl('الإجمالي')}: 0.00", font=ctk.CTkFont(size=17, weight="bold")
         )
-        self.total_label.grid(row=r, column=0, columnspan=2, padx=10, pady=(10, 6))
+        self.total_label.grid(row=r, column=1, columnspan=2, padx=10, pady=(10, 6))
 
         r += 1
-        ctk.CTkLabel(form, text=rtl("الخصم")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("الخصم")).grid(row=r, column=1, padx=10, pady=6, sticky="e")
         self.discount_entry = ctk.CTkEntry(form)
         self.discount_entry.insert(0, "0")
-        self.discount_entry.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
+        self.discount_entry.grid(row=r, column=0, padx=10, pady=6, sticky="ew")
 
         r += 1
         ctk.CTkLabel(form, text=rtl("حالة الدفع")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
         self.payment_combo = ctk.CTkComboBox(
             form, values=[rtl("مدفوع"), rtl("جزء مدفوع"), rtl("لسه لم يدفع")]
         )
-        self.payment_combo.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
+        self.payment_combo.grid(row=r, column=0, padx=10, pady=6, sticky="ew")
 
         r += 1
-        ctk.CTkLabel(form, text=rtl("حالة الطلب")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("حالة الطلب")).grid(row=r, column=1, padx=10, pady=6, sticky="e")
         self.status_combo = ctk.CTkComboBox(
             form, values=[rtl("تم التسليم"), rtl("قيد التنفيذ"), rtl("ملغي")]
         )
-        self.status_combo.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
+        self.status_combo.grid(row=r, column=0, padx=10, pady=6, sticky="ew")
 
         r += 1
         self.save_error = ctk.CTkLabel(form, text="", text_color="#C0392B")
-        self.save_error.grid(row=r, column=0, columnspan=2, padx=10, sticky="e")
+        self.save_error.grid(row=r, column=1, columnspan=2, padx=10, sticky="e")
 
         r += 1
         ctk.CTkButton(
             form, text="💾 احفظي الأوردر", fg_color="#27AE60", hover_color="#1E8449",
             font=ctk.CTkFont(size=14, weight="bold"), height=38,
             command=self._save_order
-        ).grid(row=r, column=0, columnspan=2, padx=10, pady=(10, 15), sticky="ew")
+        ).grid(row=r, column=1, columnspan=2, padx=10, pady=(10, 15), sticky="ew")
 
     def _customer_names(self):
         return [c["name"] for c in db.list_customers()]
@@ -305,7 +305,7 @@ class OrdersView(ctk.CTkFrame):
 
     def _build_recent_panel(self, parent):
         panel = ctk.CTkFrame(parent, corner_radius=10)
-        panel.grid(row=0, column=1, sticky="nsew")
+        panel.grid(row=0, column=0, sticky="nsew")
 
         ctk.CTkLabel(
             panel, text=rtl("آخر الأوردرات"), font=ctk.CTkFont(size=16, weight="bold")

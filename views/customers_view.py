@@ -24,11 +24,15 @@ class CustomersView(ctk.CTkFrame):
     def _build_header(self):
         ctk.CTkLabel(
             self, text="العملاء", font=ctk.CTkFont(size=24, weight="bold")
-        ).grid(row=0, column=0, padx=30, pady=(25, 10), sticky="w")
+        ).grid(row=0, column=0, padx=30, pady=(25, 10), sticky="e")
 
     def _build_search(self):
         self.search_entry = ctk.CTkEntry(
+            
             self, placeholder_text="دوّري باسم العميل أو رقم الموبايل...", font=ctk.CTkFont(size=14)
+        )
+        self.search_entry.configure(
+            justify="right"
         )
         self.search_entry.grid(row=1, column=0, padx=30, pady=(0, 15), sticky="ew")
         self.search_entry.bind("<KeyRelease>", lambda e: self._refresh_list())

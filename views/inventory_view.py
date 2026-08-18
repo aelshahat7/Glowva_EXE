@@ -54,7 +54,7 @@ class InventoryView(ctk.CTkFrame):
             column=0,
             padx=30,
             pady=(25, 10),
-            sticky="w"
+            sticky="e"
         )
 
     # ==========================================================
@@ -117,7 +117,7 @@ class InventoryView(ctk.CTkFrame):
 
             card.grid(
                 row=0,
-                column=i,
+                column=2 - i,
                 padx=6,
                 sticky="nsew"
             )
@@ -254,14 +254,14 @@ class InventoryView(ctk.CTkFrame):
 
         self.prev_button = ctk.CTkButton(
             self.pagination_frame,
-            text="→ السابق",
-            width=100,
+            text="← السابق",
+                width=100,
             command=self._previous_page
         )
 
         self.prev_button.grid(
             row=0,
-            column=0,
+            column=2,
             padx=5
         )
 
@@ -277,14 +277,14 @@ class InventoryView(ctk.CTkFrame):
 
         self.next_button = ctk.CTkButton(
             self.pagination_frame,
-            text="التالي ←",
+            text="التالي →",
             width=100,
             command=self._next_page
         )
 
         self.next_button.grid(
             row=0,
-            column=2,
+            column=0,
             padx=5
         )
 

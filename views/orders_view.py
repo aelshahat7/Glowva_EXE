@@ -8,6 +8,7 @@ transaction, see it appear immediately in the recent-orders list.
 import customtkinter as ctk
 from datetime import date
 import database as db
+from rtl import rtl, unrtl
 from views.product_search_dialog import ProductSearchDialog
 
 # delete-button / product name / quantity / price / line total
@@ -29,7 +30,7 @@ class OrdersView(ctk.CTkFrame):
 
     def _build_header(self):
         header = ctk.CTkLabel(
-            self, text="الأوردرات", font=ctk.CTkFont(size=24, weight="bold")
+            self, text=rtl("الأوردرات"), font=ctk.CTkFont(size=24, weight="bold")
         )
         header.grid(row=0, column=0, padx=30, pady=(25, 15), sticky="w")
 
@@ -51,23 +52,23 @@ class OrdersView(ctk.CTkFrame):
         form.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
-            form, text="أوردر جديد", font=ctk.CTkFont(size=16, weight="bold")
+            form, text=rtl("أوردر جديد"), font=ctk.CTkFont(size=16, weight="bold")
         ).grid(row=0, column=0, columnspan=2, padx=10, pady=(10, 15), sticky="e")
 
         r = 1
-        ctk.CTkLabel(form, text="التاريخ").grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("التاريخ")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
         self.date_entry = ctk.CTkEntry(form)
         self.date_entry.insert(0, date.today().isoformat())
         self.date_entry.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
 
         r += 1
-        ctk.CTkLabel(form, text="اسم العميل").grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("اسم العميل")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
         self.customer_combo = ctk.CTkComboBox(form, values=self._customer_names())
         self.customer_combo.set("")
         self.customer_combo.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
 
         r += 1
-        ctk.CTkLabel(form, text="رقم الموبايل").grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("رقم الموبايل")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
         self.phone_entry = ctk.CTkEntry(form)
         self.phone_entry.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
 
@@ -77,17 +78,17 @@ class OrdersView(ctk.CTkFrame):
 
         r += 1
         ctk.CTkLabel(
-            form, text="إضافة صنف للفاتورة", font=ctk.CTkFont(size=14, weight="bold")
+            form, text=rtl("إضافة صنف للفاتورة"), font=ctk.CTkFont(size=14, weight="bold")
         ).grid(row=r, column=0, columnspan=2, padx=10, pady=(0, 8), sticky="e")
 
         r += 1
-        ctk.CTkLabel(form, text="الصنف").grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("الصنف")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
         product_row = ctk.CTkFrame(form, fg_color="transparent")
         product_row.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
         product_row.grid_columnconfigure(0, weight=1)
 
         self.product_entry = ctk.CTkEntry(
-            product_row, placeholder_text="اكتبي اسم الصنف أو دوّري بـ🔍"
+            product_row, placeholder_text=rtl("اكتبي اسم الصنف أو دوّري بـ🔍")
         )
         self.product_entry.grid(row=0, column=0, sticky="ew")
         ctk.CTkButton(
@@ -95,13 +96,13 @@ class OrdersView(ctk.CTkFrame):
         ).grid(row=0, column=1, padx=(6, 0))
 
         r += 1
-        ctk.CTkLabel(form, text="الكمية").grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("الكمية")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
         self.qty_entry = ctk.CTkEntry(form)
         self.qty_entry.insert(0, "1")
         self.qty_entry.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
 
         r += 1
-        ctk.CTkLabel(form, text="سعر الوحدة").grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("سعر الوحدة")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
         self.price_entry = ctk.CTkEntry(form)
         self.price_entry.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
 
@@ -122,7 +123,7 @@ class OrdersView(ctk.CTkFrame):
         self.cart_header.grid(row=0, column=0, sticky="ew", padx=6, pady=(6, 0))
         for col, weight in enumerate(CART_COLUMN_WEIGHTS):
             self.cart_header.grid_columnconfigure(col, weight=weight)
-        for col, text in enumerate(["", "الصنف", "الكمية", "السعر", "الإجمالي"]):
+        for col, text in enumerate(["", rtl("الصنف"), rtl("الكمية"), rtl("السعر"), rtl("الإجمالي")]):
             ctk.CTkLabel(
                 self.cart_header, text=text, font=ctk.CTkFont(size=11, weight="bold"), anchor="e"
             ).grid(row=0, column=col, padx=6, pady=4, sticky="ew")
@@ -134,27 +135,27 @@ class OrdersView(ctk.CTkFrame):
 
         r += 1
         self.total_label = ctk.CTkLabel(
-            form, text="الإجمالي: 0.00", font=ctk.CTkFont(size=17, weight="bold")
+            form, text=f"{rtl('الإجمالي')}: 0.00", font=ctk.CTkFont(size=17, weight="bold")
         )
         self.total_label.grid(row=r, column=0, columnspan=2, padx=10, pady=(10, 6))
 
         r += 1
-        ctk.CTkLabel(form, text="الخصم").grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("الخصم")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
         self.discount_entry = ctk.CTkEntry(form)
         self.discount_entry.insert(0, "0")
         self.discount_entry.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
 
         r += 1
-        ctk.CTkLabel(form, text="حالة الدفع").grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("حالة الدفع")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
         self.payment_combo = ctk.CTkComboBox(
-            form, values=["مدفوع", "جزء مدفوع", "لسه لم يدفع"]
+            form, values=[rtl("مدفوع"), rtl("جزء مدفوع"), rtl("لسه لم يدفع")]
         )
         self.payment_combo.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
 
         r += 1
-        ctk.CTkLabel(form, text="حالة الطلب").grid(row=r, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkLabel(form, text=rtl("حالة الطلب")).grid(row=r, column=0, padx=10, pady=6, sticky="e")
         self.status_combo = ctk.CTkComboBox(
-            form, values=["تم التسليم", "قيد التنفيذ", "ملغي"]
+            form, values=[rtl("تم التسليم"), rtl("قيد التنفيذ"), rtl("ملغي")]
         )
         self.status_combo.grid(row=r, column=1, padx=10, pady=6, sticky="ew")
 
@@ -176,7 +177,7 @@ class OrdersView(ctk.CTkFrame):
         products = db.list_products()
         ProductSearchDialog(
             self.winfo_toplevel(), products, self._on_product_picked,
-            subtitle_key="current_stock", subtitle_label="المتاح بالمخزون"
+            subtitle_key="current_stock", subtitle_label=rtl("المتاح بالمخزون")
         )
 
     def _on_product_picked(self, product):
@@ -191,18 +192,18 @@ class OrdersView(ctk.CTkFrame):
         product = self.product_entry.get().strip()
 
         if not product:
-            self.line_error.configure(text="اختاري صنف الأول")
+            self.line_error.configure(text=rtl("اختاري صنف الأول"))
             return
 
         try:
             qty = float(self.qty_entry.get())
             price = float(self.price_entry.get())
         except ValueError:
-            self.line_error.configure(text="الكمية والسعر لازم يكونوا أرقام")
+            self.line_error.configure(text=rtl("الكمية والسعر لازم يكونوا أرقام"))
             return
 
         if qty <= 0:
-            self.line_error.configure(text="الكمية لازم تكون أكبر من صفر")
+            self.line_error.configure(text=rtl("الكمية لازم تكون أكبر من صفر"))
             return
 
         self.cart.append({"product_name": product, "quantity": qty, "unit_price": price})
@@ -219,7 +220,7 @@ class OrdersView(ctk.CTkFrame):
 
         if not self.cart:
             self.cart_header.grid_remove()
-            ctk.CTkLabel(self.cart_frame, text="لسه مفيش أصناف مضافة", text_color="gray50").grid(
+            ctk.CTkLabel(self.cart_frame, text=rtl("لسه مفيش أصناف مضافة"), text_color="gray50").grid(
                 row=0, column=0, columnspan=len(CART_COLUMN_WEIGHTS), padx=10, pady=10)
             self._update_total(0)
             return
@@ -257,7 +258,7 @@ class OrdersView(ctk.CTkFrame):
             discount = float(self.discount_entry.get() or 0)
         except ValueError:
             discount = 0
-        self.total_label.configure(text=f"الإجمالي: {subtotal - discount:,.2f}")
+        self.total_label.configure(text=f"{rtl('الإجمالي')}: {subtotal - discount:,.2f}")
 
     def _remove_line(self, index):
         del self.cart[index]
@@ -267,12 +268,12 @@ class OrdersView(ctk.CTkFrame):
         self.save_error.configure(text="")
 
         if not self.cart:
-            self.save_error.configure(text="لازم تضيفي صنف واحد على الأقل")
+            self.save_error.configure(text=rtl("لازم تضيفي صنف واحد على الأقل"))
             return
 
         customer = self.customer_combo.get().strip()
         if not customer:
-            self.save_error.configure(text="لازم تكتبي اسم العميل")
+            self.save_error.configure(text=rtl("لازم تكتبي اسم العميل"))
             return
 
         try:
@@ -285,8 +286,8 @@ class OrdersView(ctk.CTkFrame):
             customer_name=customer,
             items=self.cart,
             customer_phone=self.phone_entry.get().strip(),
-            payment_status=self.payment_combo.get() or "مدفوع",
-            order_status=self.status_combo.get() or "قيد التنفيذ",
+            payment_status=unrtl(self.payment_combo.get()) or "مدفوع",
+            order_status=unrtl(self.status_combo.get()) or "قيد التنفيذ",
             discount=discount,
         )
 
@@ -307,7 +308,7 @@ class OrdersView(ctk.CTkFrame):
         panel.grid(row=0, column=1, sticky="nsew")
 
         ctk.CTkLabel(
-            panel, text="آخر الأوردرات", font=ctk.CTkFont(size=16, weight="bold")
+            panel, text=rtl("آخر الأوردرات"), font=ctk.CTkFont(size=16, weight="bold")
         ).pack(padx=15, pady=(15, 10), anchor="e")
 
         self.recent_frame = ctk.CTkScrollableFrame(panel, fg_color="transparent")
@@ -320,7 +321,7 @@ class OrdersView(ctk.CTkFrame):
         orders = db.list_recent_orders(limit=20)
 
         if not orders:
-            ctk.CTkLabel(self.recent_frame, text="مفيش أوردرات لسه", text_color="gray50").pack(pady=20)
+            ctk.CTkLabel(self.recent_frame, text=rtl("مفيش أوردرات لسه"), text_color="gray50").pack(pady=20)
             return
 
         status_colors = {
@@ -336,7 +337,7 @@ class OrdersView(ctk.CTkFrame):
             top = ctk.CTkFrame(row, fg_color="transparent")
             top.pack(fill="x", padx=10, pady=(8, 0))
             ctk.CTkLabel(
-                top, text=o["customer_name"] or "بدون اسم", font=ctk.CTkFont(weight="bold")
+                top, text=o["customer_name"] or rtl("بدون اسم"), font=ctk.CTkFont(weight="bold")
             ).pack(side="right")
             ctk.CTkLabel(
                 top, text=f"{o['total']:,.2f}", font=ctk.CTkFont(weight="bold"),
@@ -347,7 +348,7 @@ class OrdersView(ctk.CTkFrame):
             bottom.pack(fill="x", padx=10, pady=(0, 8))
             ctk.CTkLabel(bottom, text=o["order_date"], text_color="gray50", font=ctk.CTkFont(size=11)).pack(side="right")
             ctk.CTkLabel(
-                bottom, text=o["order_status"],
+                bottom, text=rtl(o["order_status"]),
                 text_color=status_colors.get(o["order_status"], "gray50"),
                 font=ctk.CTkFont(size=11)
             ).pack(side="left")

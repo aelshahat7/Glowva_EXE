@@ -43,14 +43,14 @@ NAV_ITEMS = [
 ]
 
 ARABIC_LABELS = {
-    "Dashboard": "لوحة التحكم",
-    "Orders": "الأوردرات",
-    "Purchases": "المشتريات",
-    "Products": "الأصناف",
-    "Inventory": "المخزون",
-    "Customers": "العملاء",
-    "Suppliers": "الموردين",
-    "ProfitPayout": "صرف الأرباح",
+    "Dashboard": rtl("لوحة التحكم"),
+    "Orders": rtl("الأوردرات"),
+    "Purchases": rtl("المشتريات"),
+    "Products": rtl("الأصناف"),
+    "Inventory": rtl("المخزون"),
+    "Customers": rtl("العملاء"),
+    "Suppliers": rtl("الموردين"),
+    "ProfitPayout": rtl("صرف الأرباح"),
 }
 
 
@@ -430,7 +430,7 @@ class GlowvaApp(ctk.CTk):
         self._clear_content()
         label = ctk.CTkLabel(
             self.content,
-            text=f"{ARABIC_LABELS[key]}\n\nقريباً — الشاشة دي هنبنيها في الخطوة الجاية",
+            text=f"{ARABIC_LABELS[key]}\n\n{rtl('قريباً — الشاشة دي هنبنيها في الخطوة الجاية')}",
             font=ctk.CTkFont(size=18),
             justify="center"
         )
@@ -441,7 +441,7 @@ class GlowvaApp(ctk.CTk):
         self.nav_buttons["Dashboard"].configure(fg_color="#1f6aa5")
 
         header = ctk.CTkLabel(
-            self.content, text="لوحة التحكم",
+            self.content, text=rtl("لوحة التحكم"),
             font=ctk.CTkFont(size=24, weight="bold")
         )
         header.grid(row=0, column=0, padx=30, pady=(25, 15), sticky="w")
@@ -454,15 +454,15 @@ class GlowvaApp(ctk.CTk):
             cards_frame.grid_columnconfigure(i, weight=1)
 
         cards = [
-            ("إجمالي المبيعات", f"{summary['total_sales']:,.2f}", "#2F5496"),
-            ("إجمالي المشتريات", f"{summary['total_purchases']:,.2f}", "#2F5496"),
-            ("صافي الربح التقديري", f"{summary['profit']:,.2f}", "#2F5496"),
-            ("نسبة الربح", f"{summary['margin']*100:,.1f}%", "#2F5496"),
-            ("أصناف قرّبت تخلص", f"{summary['low_stock_count']}",
+            (rtl("إجمالي المبيعات"), f"{summary['total_sales']:,.2f}", "#2F5496"),
+            (rtl("إجمالي المشتريات"), f"{summary['total_purchases']:,.2f}", "#2F5496"),
+            (rtl("صافي الربح التقديري"), f"{summary['profit']:,.2f}", "#2F5496"),
+            (rtl("نسبة الربح"), f"{summary['margin']*100:,.1f}%", "#2F5496"),
+            (rtl("أصناف قرّبت تخلص"), f"{summary['low_stock_count']}",
              "#C0392B" if summary['low_stock_count'] > 0 else "#2F5496"),
-            ("عدد الأوردرات", f"{summary['order_count']}", "#2F5496"),
-            ("إجمالي صرف الأرباح", f"{summary['total_payouts']:,.2f}", "#E67E22"),
-            ("المتاح فعليًا", f"{summary['available_balance']:,.2f}",
+            (rtl("عدد الأوردرات"), f"{summary['order_count']}", "#2F5496"),
+            (rtl("إجمالي صرف الأرباح"), f"{summary['total_payouts']:,.2f}", "#E67E22"),
+            (rtl("المتاح فعليًا"), f"{summary['available_balance']:,.2f}",
              "#C0392B" if summary['available_balance'] < 0 else "#27AE60"),
         ]
 
@@ -480,13 +480,13 @@ class GlowvaApp(ctk.CTk):
             warn_frame = ctk.CTkFrame(self.content, corner_radius=10, fg_color="#FDECEA")
             warn_frame.grid(row=2, column=0, padx=30, pady=20, sticky="ew")
             ctk.CTkLabel(
-                warn_frame, text="⚠️ أصناف قرّبت تخلص",
+                warn_frame, text=rtl("⚠️ أصناف قرّبت تخلص"),
                 font=ctk.CTkFont(size=15, weight="bold"), text_color="#C0392B"
             ).pack(padx=15, pady=(12, 5), anchor="e")
             for item in low_items[:5]:
                 ctk.CTkLabel(
                     warn_frame,
-                    text=f"• {item['product_name']} (المتبقي: {item['current_stock']:.0f})",
+                    text=f"• {item['product_name']} ({rtl('المتبقي')}: {item['current_stock']:.0f})",
                     text_color="#C0392B"
                 ).pack(padx=25, pady=2, anchor="e")
             warn_frame.pack_slaves()[-1].pack(pady=(2, 12))

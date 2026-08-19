@@ -5,22 +5,13 @@ and Suppliers don't need two near-identical files.
 """
 
 import customtkinter as ctk
+from datetime import datetime, date, timedelta
 from rtl import rtl
 
 
 class PartyDetailDialog(ctk.CTkToplevel):
 
     def __init__(self, parent, party, history_rows, config):
-        """
-        party: dict with at least 'name'; 'phone'/'contact_info', 'address' optional
-        history_rows: list of dicts, each with 'date_key', 'total', and optional 'sub_key'
-        config: {
-            'title_prefix': 'كشف حساب' or similar,
-            'date_label': 'التاريخ',
-            'history_label': 'السجل',
-            'sub_label': label for the secondary field shown per row (status or invoice#),
-        }
-        """
         super().__init__(parent)
 
         self.title(f"{rtl(config['title_prefix'])}: {rtl(party['name'])}")
@@ -34,6 +25,47 @@ class PartyDetailDialog(ctk.CTkToplevel):
         self._build_header(party)
         self._build_summary(party, history_rows)
         self._build_history(history_rows, config)
+
+    @staticmethod
+    def _format_date(value):
+        """Return all supported date representations as DD/MM/YYYY."""
+        if value is None or value == "":
+            return "—"
+
+        if isinstance(value, datetime):
+            return value.strftime("%d/%m/%Y")
+
+        if isinstance(value, date):
+            return value.strftime("%d/%m/%Y")
+
+        if isinstance(value, (int, float)):
+            # Excel/Sheets serial date. Excel epoch used here is 1899-12-30.
+            try:
+                serial = float(value)
+                base = datetime(1899, 12, 30)
+                return (base + timedelta(days=serial)).strftime("%d/%m/%Y")
+            except (ValueError, OverflowError):
+                return str(value)
+
+        text = str(value).strip()
+
+        # Numeric strings from imported Excel/Sheets data, e.g. "46231.0"
+        try:
+            serial = float(text)
+            if serial > 20000:
+                base = datetime(1899, 12, 30)
+                return (base + timedelta(days=serial)).strftime("%d/%m/%Y")
+        except ValueError:
+            pass
+
+        # ISO datetime/date
+        for fmt in ("%Y-%m-%d", "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
+            try:
+                return datetime.strptime(text, fmt).strftime("%d/%m/%Y")
+            except ValueError:
+                continue
+
+        return text
 
     def _build_header(self, party):
         header = ctk.CTkFrame(self, fg_color="transparent")
@@ -107,7 +139,7 @@ class PartyDetailDialog(ctk.CTkToplevel):
             return
 
         sub_label = rtl(config.get("sub_label", "تفاصيل"))
-        column_weights = (1, 1, 2)  # sub_key ثابت / إجمالي ثابت / تاريخ يمدد
+        column_weights = (1, 1, 2)
 
         header = ctk.CTkFrame(panel, fg_color=("gray85", "gray22"), corner_radius=6)
         header.grid(row=1, column=0, sticky="ew", pady=(0, 2))
@@ -138,7 +170,7 @@ class PartyDetailDialog(ctk.CTkToplevel):
             values = [
                 sub_value,
                 f"{h['total']:,.2f}",
-                h["date_key"],
+                self._format_date(h.get("date_key")),
             ]
             for col, text in enumerate(values):
                 ctk.CTkLabel(

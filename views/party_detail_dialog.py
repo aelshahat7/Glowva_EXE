@@ -5,8 +5,7 @@ and Suppliers don't need two near-identical files.
 """
 
 import customtkinter as ctk
-from datetime import datetime, date, timedelta
-from rtl import rtl
+from rtl import rtl, format_date
 
 
 class PartyDetailDialog(ctk.CTkToplevel):
@@ -25,47 +24,6 @@ class PartyDetailDialog(ctk.CTkToplevel):
         self._build_header(party)
         self._build_summary(party, history_rows)
         self._build_history(history_rows, config)
-
-    @staticmethod
-    def _format_date(value):
-        """Return all supported date representations as DD/MM/YYYY."""
-        if value is None or value == "":
-            return "—"
-
-        if isinstance(value, datetime):
-            return value.strftime("%d/%m/%Y")
-
-        if isinstance(value, date):
-            return value.strftime("%d/%m/%Y")
-
-        if isinstance(value, (int, float)):
-            # Excel/Sheets serial date. Excel epoch used here is 1899-12-30.
-            try:
-                serial = float(value)
-                base = datetime(1899, 12, 30)
-                return (base + timedelta(days=serial)).strftime("%d/%m/%Y")
-            except (ValueError, OverflowError):
-                return str(value)
-
-        text = str(value).strip()
-
-        # Numeric strings from imported Excel/Sheets data, e.g. "46231.0"
-        try:
-            serial = float(text)
-            if serial > 20000:
-                base = datetime(1899, 12, 30)
-                return (base + timedelta(days=serial)).strftime("%d/%m/%Y")
-        except ValueError:
-            pass
-
-        # ISO datetime/date
-        for fmt in ("%Y-%m-%d", "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
-            try:
-                return datetime.strptime(text, fmt).strftime("%d/%m/%Y")
-            except ValueError:
-                continue
-
-        return text
 
     def _build_header(self, party):
         header = ctk.CTkFrame(self, fg_color="transparent")
@@ -167,11 +125,13 @@ class PartyDetailDialog(ctk.CTkToplevel):
             sub_value = str(h.get("sub_key") or "—")
             if any("\u0600" <= ch <= "\u06ff" for ch in sub_value):
                 sub_value = rtl(sub_value)
+
             values = [
                 sub_value,
                 f"{h['total']:,.2f}",
-                self._format_date(h.get("date_key")),
+                format_date(h.get("date_key")),
             ]
+
             for col, text in enumerate(values):
                 ctk.CTkLabel(
                     scroll,

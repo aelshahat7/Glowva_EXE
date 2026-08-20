@@ -98,9 +98,12 @@ class PurchaseReturnsView(ctk.CTkToplevel):
         frame.grid(row=4, column=0, padx=25, pady=(0, 20), sticky="ew")
         frame.grid_columnconfigure(1, weight=1)
 
+        # Entry widgets should keep the user's typing order. Do not run rtl()
+        # on the placeholder or on editable text, otherwise the words are
+        # reversed while the user is typing.
         self.reason_entry = ctk.CTkEntry(
             frame,
-            placeholder_text=rtl("سبب المرتجع (اختياري)"),
+            placeholder_text="سبب المرتجع (اختياري)",
             justify="right"
         )
         self.reason_entry.grid(row=0, column=1, padx=10, sticky="ew")
@@ -209,10 +212,6 @@ class PurchaseReturnsView(ctk.CTkToplevel):
     def _render_items(self, purchase_id):
         self._clear_items()
 
-        # Visual order in the RTL interface:
-        # return quantity | available | original quantity | price | product
-        # Because Tkinter grid column 0 is physically on the left,
-        # the product is deliberately placed in the far-right column (4).
         columns = [
             (0, rtl("كمية المرتجع"), 1),
             (1, rtl("متاح للمرتجع"), 1),

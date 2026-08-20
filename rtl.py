@@ -101,7 +101,21 @@ def _select_all_widget(widget):
 
 def _copy_widget(widget):
     try:
-        widget.event_generate("<<Copy>>")
+        if isinstance(widget, tk.Text):
+            try:
+                start = widget.index("sel.first")
+                end = widget.index("sel.last")
+            except tk.TclError:
+                return "break"
+            text = widget.get(start, end)
+        else:
+            if not widget.selection_present():
+                return "break"
+            text = widget.selection_get()
+
+        widget.clipboard_clear()
+        widget.clipboard_append(text)
+        widget.update()
     except tk.TclError:
         pass
     return "break"
@@ -111,7 +125,11 @@ def _cut_widget(widget):
     if not _is_editable(widget):
         return "break"
     try:
-        widget.event_generate("<<Cut>>")
+        _copy_widget(widget)
+        if isinstance(widget, tk.Text):
+            widget.delete("sel.first", "sel.last")
+        else:
+            widget.delete("sel.first", "sel.last")
     except tk.TclError:
         pass
     return "break"
@@ -121,7 +139,19 @@ def _paste_widget(widget):
     if not _is_editable(widget):
         return "break"
     try:
-        widget.event_generate("<<Paste>>")
+        text = widget.clipboard_get()
+        if isinstance(widget, tk.Text):
+            try:
+                widget.delete("sel.first", "sel.last")
+            except tk.TclError:
+                pass
+            widget.insert("insert", text)
+        else:
+            try:
+                widget.delete("sel.first", "sel.last")
+            except tk.TclError:
+                pass
+            widget.insert("insert", text)
     except tk.TclError:
         pass
     return "break"
@@ -152,11 +182,25 @@ def _show_context_menu(event):
     _context_menus[widget] = menu
     selected = _has_selection(widget)
 
-    menu.add_command(label="قص", state="normal" if selected else "disabled", command=lambda w=widget: _cut_widget(w))
-    menu.add_command(label="نسخ", state="normal" if selected else "disabled", command=lambda w=widget: _copy_widget(w))
-    menu.add_command(label="لصق", command=lambda w=widget: _paste_widget(w))
+    menu.add_command(
+        label="قص",
+        state="normal" if selected else "disabled",
+        command=lambda w=widget: _cut_widget(w),
+    )
+    menu.add_command(
+        label="نسخ",
+        state="normal" if selected else "disabled",
+        command=lambda w=widget: _copy_widget(w),
+    )
+    menu.add_command(
+        label="لصق",
+        command=lambda w=widget: _paste_widget(w),
+    )
     menu.add_separator()
-    menu.add_command(label="تحديد الكل", command=lambda w=widget: _select_all_widget(w))
+    menu.add_command(
+        label="تحديد الكل",
+        command=lambda w=widget: _select_all_widget(w),
+    )
 
     try:
         menu.tk_popup(event.x_root, event.y_root)
@@ -169,10 +213,12 @@ def _show_context_menu(event):
 
 
 def _bind_text_editing(widget):
-    widget.bind("<Control-c>", lambda e: _copy_widget(e.widget), add="+")
-    widget.bind("<Control-x>", lambda e: _cut_widget(e.widget), add="+")
-    widget.bind("<Control-v>", lambda e: _paste_widget(e.widget), add="+")
-    widget.bind("<Control-a>", lambda e: _select_all_widget(e.widget), add="+")
+    # Use Ctrl-KeyPress directly and handle clipboard operations ourselves.
+    # This avoids virtual-event/class-binding conflicts in Tk and CustomTkinter.
+    widget.bind("<Control-KeyPress-c>", lambda e: _copy_widget(e.widget), add="+")
+    widget.bind("<Control-KeyPress-x>", lambda e: _cut_widget(e.widget), add="+")
+    widget.bind("<Control-KeyPress-v>", lambda e: _paste_widget(e.widget), add="+")
+    widget.bind("<Control-KeyPress-a>", lambda e: _select_all_widget(e.widget), add="+")
     widget.bind("<Button-3>", _show_context_menu, add="+")
 
 

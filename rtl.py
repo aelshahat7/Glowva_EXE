@@ -72,8 +72,8 @@ def unrtl(text):
 # ==========================================================
 
 _context_menus = {}
-_text_edit_bindings_installed = False
-_original_tk_init = tk.Tk.__init__
+_original_entry_init = tk.Entry.__init__
+_original_text_init = tk.Text.__init__
 
 
 def _is_editable(widget):
@@ -161,29 +161,33 @@ def _show_context_menu(event):
     try:
         menu.tk_popup(event.x_root, event.y_root)
     finally:
-        menu.grab_release()
+        try:
+            menu.grab_release()
+        except tk.TclError:
+            pass
     return "break"
 
 
-def _install_text_edit_bindings(root):
-    global _text_edit_bindings_installed
-    if _text_edit_bindings_installed:
-        return
-    root.bind_all("<Control-c>", lambda e: _copy_widget(e.widget), add="+")
-    root.bind_all("<Control-x>", lambda e: _cut_widget(e.widget), add="+")
-    root.bind_all("<Control-v>", lambda e: _paste_widget(e.widget), add="+")
-    root.bind_all("<Control-a>", lambda e: _select_all_widget(e.widget), add="+")
-    root.bind_all("<Button-3>", _show_context_menu, add="+")
-    _text_edit_bindings_installed = True
+def _bind_text_editing(widget):
+    widget.bind("<Control-c>", lambda e: _copy_widget(e.widget), add="+")
+    widget.bind("<Control-x>", lambda e: _cut_widget(e.widget), add="+")
+    widget.bind("<Control-v>", lambda e: _paste_widget(e.widget), add="+")
+    widget.bind("<Control-a>", lambda e: _select_all_widget(e.widget), add="+")
+    widget.bind("<Button-3>", _show_context_menu, add="+")
 
 
-def _patched_tk_init(self, *args, **kwargs):
-    _original_tk_init(self, *args, **kwargs)
-    _install_text_edit_bindings(self)
+def _patched_entry_init(self, *args, **kwargs):
+    _original_entry_init(self, *args, **kwargs)
+    _bind_text_editing(self)
 
 
-# main.py imports rtl before creating the root. Hook Tk.__init__ so the
-# bindings are installed automatically for the whole application.
-if not getattr(tk.Tk.__init__, "_glowva_text_edit_hook", False):
-    _patched_tk_init._glowva_text_edit_hook = True
-    tk.Tk.__init__ = _patched_tk_init
+def _patched_text_init(self, *args, **kwargs):
+    _original_text_init(self, *args, **kwargs)
+    _bind_text_editing(self)
+
+
+# Bind directly to every Tk Entry and Text instance.
+# This also covers CustomTkinter CTkEntry / CTkTextbox because they use
+# Tk's underlying Entry/Text widgets internally.
+tk.Entry.__init__ = _patched_entry_init
+tk.Text.__init__ = _patched_text_init

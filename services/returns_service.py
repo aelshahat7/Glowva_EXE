@@ -30,7 +30,6 @@ def initialize_returns():
                 reason TEXT,
                 created_at TEXT NOT NULL DEFAULT (datetime('now'))
             );
-
             CREATE TABLE IF NOT EXISTS sales_return_items (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 sales_return_id INTEGER NOT NULL REFERENCES sales_returns(id) ON DELETE CASCADE,
@@ -40,7 +39,6 @@ def initialize_returns():
                 unit_price REAL NOT NULL,
                 cost_price REAL NOT NULL DEFAULT 0
             );
-
             CREATE TABLE IF NOT EXISTS purchase_returns (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 return_date TEXT NOT NULL,
@@ -50,7 +48,6 @@ def initialize_returns():
                 reason TEXT,
                 created_at TEXT NOT NULL DEFAULT (datetime('now'))
             );
-
             CREATE TABLE IF NOT EXISTS purchase_return_items (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 purchase_return_id INTEGER NOT NULL REFERENCES purchase_returns(id) ON DELETE CASCADE,
@@ -88,11 +85,54 @@ def list_sales_invoices(limit=200, customer_id=None):
         if customer_id is not None:
             sql += " AND o.customer_id = ?"
             params.append(customer_id)
-
         sql += """
             GROUP BY o.id
             HAVING COALESCE(SUM(oi.quantity * oi.unit_price), 0) > 0
             ORDER BY o.id DESC
+            LIMIT ?
+        """
+        params.append(limit)
+        rows = conn.execute(sql, params).fetchall()
+        return [dict(r) for r in rows]
+
+
+def list_purchase_suppliers():
+    """Suppliers that have at least one purchase invoice."""
+    with db.get_connection() as conn:
+        rows = conn.execute(
+            """
+            SELECT s.id, s.name, COUNT(DISTINCT p.id) AS purchase_count
+            FROM suppliers s
+            LEFT JOIN purchases p ON p.supplier_id = s.id
+            GROUP BY s.id
+            HAVING COUNT(DISTINCT p.id) > 0
+            ORDER BY s.name
+            """
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def list_purchase_invoices(limit=200, supplier_id=None):
+    """List purchase invoices, optionally filtered to one supplier."""
+    with db.get_connection() as conn:
+        sql = """
+            SELECT p.id, p.purchase_date, p.invoice_number,
+                   COALESCE(s.name, '') AS supplier_name,
+                   COALESCE(SUM(pi.quantity * pi.unit_price), 0) AS total
+            FROM purchases p
+            LEFT JOIN suppliers s ON s.id = p.supplier_id
+            LEFT JOIN purchase_items pi
+              ON pi.purchase_id = p.id AND pi.is_return_adjustment = 0
+            WHERE 1 = 1
+        """
+        params = []
+        if supplier_id is not None:
+            sql += " AND p.supplier_id = ?"
+            params.append(supplier_id)
+        sql += """
+            GROUP BY p.id
+            HAVING COALESCE(SUM(pi.quantity * pi.unit_price), 0) > 0
+            ORDER BY p.id DESC
             LIMIT ?
         """
         params.append(limit)
@@ -151,7 +191,6 @@ def create_sales_return(order_id, items, reason="", return_date=None):
             qty = float(item.get("quantity", 0) or 0)
             if qty <= 0:
                 continue
-
             row = conn.execute(
                 """
                 SELECT oi.id, oi.product_id, oi.quantity, oi.unit_price,
@@ -169,11 +208,9 @@ def create_sales_return(order_id, items, reason="", return_date=None):
             ).fetchone()
             if not row:
                 raise ValueError("أحد الأصناف غير موجود في الفاتورة")
-
             available = float(row["quantity"]) - float(row["already_returned"])
             if qty > available + 1e-9:
                 raise ValueError("كمية المرتجع أكبر من الكمية المتاحة للمرتجع")
-
             total += qty * float(row["unit_price"])
             clean_items.append((row, qty))
 
@@ -206,29 +243,7 @@ def create_sales_return(order_id, items, reason="", return_date=None):
                 """,
                 (order_id, row["product_id"], -qty, row["unit_price"]),
             )
-
         return return_id
-
-
-def list_purchase_invoices(limit=200):
-    with db.get_connection() as conn:
-        rows = conn.execute(
-            """
-            SELECT p.id, p.purchase_date, p.invoice_number,
-                   COALESCE(s.name, '') AS supplier_name,
-                   COALESCE(SUM(pi.quantity * pi.unit_price), 0) AS total
-            FROM purchases p
-            LEFT JOIN suppliers s ON s.id = p.supplier_id
-            LEFT JOIN purchase_items pi
-              ON pi.purchase_id = p.id AND pi.is_return_adjustment = 0
-            GROUP BY p.id
-            HAVING COALESCE(SUM(pi.quantity * pi.unit_price), 0) > 0
-            ORDER BY p.id DESC
-            LIMIT ?
-            """,
-            (limit,),
-        ).fetchall()
-        return [dict(r) for r in rows]
 
 
 def get_purchase_return_lines(purchase_id):
@@ -281,7 +296,6 @@ def create_purchase_return(purchase_id, items, reason="", return_date=None):
             qty = float(item.get("quantity", 0) or 0)
             if qty <= 0:
                 continue
-
             row = conn.execute(
                 """
                 SELECT pi.id, pi.product_id, pi.quantity, pi.unit_price,
@@ -297,11 +311,9 @@ def create_purchase_return(purchase_id, items, reason="", return_date=None):
             ).fetchone()
             if not row:
                 raise ValueError("أحد الأصناف غير موجود في فاتورة التوريد")
-
             available = float(row["quantity"]) - float(row["already_returned"])
             if qty > available + 1e-9:
                 raise ValueError("كمية المرتجع أكبر من الكمية المتاحة للمرتجع")
-
             total += qty * float(row["unit_price"])
             clean_items.append((row, qty))
 
@@ -334,7 +346,6 @@ def create_purchase_return(purchase_id, items, reason="", return_date=None):
                 """,
                 (purchase_id, row["product_id"], -qty, row["unit_price"]),
             )
-
         return return_id
 
 

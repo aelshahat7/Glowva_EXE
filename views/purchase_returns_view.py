@@ -88,6 +88,10 @@ class PurchaseReturnsView(ctk.CTkToplevel):
         self.items_frame = ctk.CTkScrollableFrame(self, corner_radius=10)
         self.items_frame.grid(row=3, column=0, padx=25, pady=10, sticky="nsew")
         self.items_frame.grid_columnconfigure(0, weight=1)
+        self.items_frame.grid_columnconfigure(1, weight=1)
+        self.items_frame.grid_columnconfigure(2, weight=1)
+        self.items_frame.grid_columnconfigure(3, weight=1)
+        self.items_frame.grid_columnconfigure(4, weight=5)
 
     def _build_footer(self):
         frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -205,17 +209,19 @@ class PurchaseReturnsView(ctk.CTkToplevel):
     def _render_items(self, purchase_id):
         self._clear_items()
 
-        # RTL visual order: item on the far right, return quantity on the far left.
-        headers = [
-            rtl("الصنف"),
-            rtl("السعر"),
-            rtl("الكمية الأصلية"),
-            rtl("متاح للمرتجع"),
-            rtl("كمية المرتجع"),
+        # Visual order in the RTL interface:
+        # return quantity | available | original quantity | price | product
+        # Because Tkinter grid column 0 is physically on the left,
+        # the product is deliberately placed in the far-right column (4).
+        columns = [
+            (0, rtl("كمية المرتجع"), 1),
+            (1, rtl("متاح للمرتجع"), 1),
+            (2, rtl("الكمية الأصلية"), 1),
+            (3, rtl("السعر"), 1),
+            (4, rtl("الصنف"), 5),
         ]
 
-        for col, text in enumerate(headers):
-            weight = 5 if col == 0 else 1
+        for col, text, weight in columns:
             self.items_frame.grid_columnconfigure(
                 col, weight=weight, uniform="return_cols"
             )
@@ -231,17 +237,17 @@ class PurchaseReturnsView(ctk.CTkToplevel):
         for row_idx, item in enumerate(
             rs.get_purchase_return_lines(purchase_id), start=1
         ):
-            values = [
-                item["product_name"],
-                f"{item['unit_price']:,.2f}",
-                f"{item['purchased_quantity']:g}",
-                f"{item['available_quantity']:g}",
-            ]
+            values = {
+                4: rtl(str(item["product_name"])),
+                3: f"{item['unit_price']:,.2f}",
+                2: f"{item['purchased_quantity']:g}",
+                1: f"{item['available_quantity']:g}",
+            }
 
-            for col, value in enumerate(values):
+            for col in (4, 3, 2, 1):
                 ctk.CTkLabel(
                     self.items_frame,
-                    text=rtl(str(value)) if col == 0 else str(value),
+                    text=values[col],
                     anchor="e"
                 ).grid(
                     row=row_idx, column=col, padx=10, pady=7, sticky="ew"
@@ -252,7 +258,7 @@ class PurchaseReturnsView(ctk.CTkToplevel):
             )
             entry.insert(0, "0")
             entry.grid(
-                row=row_idx, column=4, padx=10, pady=7, sticky="ew"
+                row=row_idx, column=0, padx=10, pady=7, sticky="ew"
             )
 
             self.line_entries[item["purchase_item_id"]] = {

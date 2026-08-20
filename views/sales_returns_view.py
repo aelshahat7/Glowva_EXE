@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from datetime import date
 import database as db
-from rtl import rtl
+from rtl import rtl, unrtl
 from services import returns_service as rs
 
 
@@ -39,61 +39,31 @@ class SalesReturnsView(ctk.CTkToplevel):
         frame.grid_columnconfigure(1, weight=1)
         frame.grid_columnconfigure(3, weight=1)
 
-        ctk.CTkLabel(
-            frame,
-            text=rtl("العميل"),
-            font=ctk.CTkFont(weight="bold"),
-        ).grid(row=0, column=4, padx=10, pady=10, sticky="e")
-
-        self.customer_combo = ctk.CTkComboBox(
-            frame,
-            values=[],
-            justify="right",
-            width=240,
+        ctk.CTkLabel(frame, text=rtl("العميل"), font=ctk.CTkFont(weight="bold")).grid(
+            row=0, column=4, padx=10, pady=10, sticky="e"
         )
+        self.customer_combo = ctk.CTkComboBox(frame, values=[], justify="right", width=240)
         self.customer_combo.grid(row=0, column=3, padx=10, pady=10, sticky="ew")
-
-        ctk.CTkButton(
-            frame,
-            text=rtl("بحث"),
-            width=90,
-            command=self._search_customer_invoices,
-        ).grid(row=0, column=2, padx=10, pady=10)
-
-        ctk.CTkLabel(
-            frame,
-            text=rtl("الفاتورة"),
-            font=ctk.CTkFont(weight="bold"),
-        ).grid(row=1, column=4, padx=10, pady=10, sticky="e")
-
-        self.invoice_combo = ctk.CTkComboBox(
-            frame,
-            values=[],
-            justify="right",
-            width=420,
+        ctk.CTkButton(frame, text=rtl("بحث"), width=90, command=self._search_customer_invoices).grid(
+            row=0, column=2, padx=10, pady=10
         )
+
+        ctk.CTkLabel(frame, text=rtl("الفاتورة"), font=ctk.CTkFont(weight="bold")).grid(
+            row=1, column=4, padx=10, pady=10, sticky="e"
+        )
+        self.invoice_combo = ctk.CTkComboBox(frame, values=[], justify="right", width=420)
         self.invoice_combo.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
         self.invoice_combo.bind("<<ComboboxSelected>>", self._on_invoice_selected)
-
-        ctk.CTkButton(
-            frame,
-            text=rtl("تحميل الفاتورة"),
-            command=self._load_selected_invoice,
-        ).grid(row=1, column=0, padx=10, pady=10)
+        ctk.CTkButton(frame, text=rtl("تحميل الفاتورة"), command=self._load_selected_invoice).grid(
+            row=1, column=0, padx=10, pady=10
+        )
 
         self.invoice_info = ctk.CTkLabel(
             frame,
             text=rtl("اختار العميل ثم اضغط بحث لعرض فواتيره"),
             text_color="gray50",
         )
-        self.invoice_info.grid(
-            row=2,
-            column=0,
-            columnspan=5,
-            padx=10,
-            pady=(0, 10),
-            sticky="e",
-        )
+        self.invoice_info.grid(row=2, column=0, columnspan=5, padx=10, pady=(0, 10), sticky="e")
 
     def _build_items_area(self):
         self.items_frame = ctk.CTkScrollableFrame(self, corner_radius=10)
@@ -102,17 +72,27 @@ class SalesReturnsView(ctk.CTkToplevel):
             self.items_frame.grid_columnconfigure(col, weight=1)
         self.items_frame.grid_columnconfigure(4, weight=4)
 
+    def _format_note_display(self, event=None):
+        """Apply the app's manual RTL display transform only when leaving the entry."""
+        logical = unrtl(self.reason_entry.get())
+        if not logical.strip():
+            return
+        visual = rtl(logical)
+        self.reason_entry.delete(0, "end")
+        self.reason_entry.insert(0, visual)
+
+    def _note_logical_text(self):
+        """Return the note in logical text order for storage."""
+        return unrtl(self.reason_entry.get().strip())
+
     def _build_footer(self):
         frame = ctk.CTkFrame(self, fg_color="transparent")
         frame.grid(row=3, column=0, padx=25, pady=(0, 20), sticky="ew")
         frame.grid_columnconfigure(1, weight=1)
 
-        self.reason_entry = ctk.CTkEntry(
-            frame,
-            placeholder_text="سبب المرتجع (اختياري)",
-            justify="right",
-        )
+        self.reason_entry = ctk.CTkEntry(frame, placeholder_text="سبب المرتجع (اختياري)", justify="right")
         self.reason_entry.grid(row=0, column=1, padx=10, sticky="ew")
+        self.reason_entry.bind("<FocusOut>", self._format_note_display)
 
         self.save_button = ctk.CTkButton(
             frame,
@@ -123,20 +103,8 @@ class SalesReturnsView(ctk.CTkToplevel):
         )
         self.save_button.grid(row=0, column=0, padx=10)
 
-        self.status_label = ctk.CTkLabel(
-            frame,
-            text="",
-            text_color="#C0392B",
-            justify="right",
-        )
-        self.status_label.grid(
-            row=1,
-            column=0,
-            columnspan=2,
-            padx=10,
-            pady=(8, 0),
-            sticky="e",
-        )
+        self.status_label = ctk.CTkLabel(frame, text="", text_color="#C0392B", justify="right")
+        self.status_label.grid(row=1, column=0, columnspan=2, padx=10, pady=(8, 0), sticky="e")
 
     def _load_customers(self):
         self.customer_map = {}
@@ -171,9 +139,7 @@ class SalesReturnsView(ctk.CTkToplevel):
         invoices = rs.list_sales_invoices(customer_id=customer_id)
         values = []
         for inv in invoices:
-            label = rtl(
-                f"فاتورة رقم {inv['id']} | التاريخ {inv['order_date']} | الإجمالي {inv['total']:,.2f}"
-            )
+            label = rtl(f"فاتورة رقم {inv['id']} | التاريخ {inv['order_date']} | الإجمالي {inv['total']:,.2f}")
             self.invoice_map[label] = inv["id"]
             values.append(label)
 
@@ -212,52 +178,25 @@ class SalesReturnsView(ctk.CTkToplevel):
 
     def _render_items(self, order_id):
         self._clear_items()
-
-        headers = [
-            rtl("كمية المرتجع"),
-            rtl("متاح للمرتجع"),
-            rtl("الكمية الأصلية"),
-            rtl("السعر"),
-            rtl("الصنف"),
-        ]
-
+        headers = [rtl("كمية المرتجع"), rtl("متاح للمرتجع"), rtl("الكمية الأصلية"), rtl("السعر"), rtl("الصنف")]
         for col, text in enumerate(headers):
-            ctk.CTkLabel(
-                self.items_frame,
-                text=text,
-                font=ctk.CTkFont(weight="bold"),
-                anchor="e",
-            ).grid(row=0, column=col, padx=8, pady=8, sticky="ew")
+            ctk.CTkLabel(self.items_frame, text=text, font=ctk.CTkFont(weight="bold"), anchor="e").grid(
+                row=0, column=col, padx=8, pady=8, sticky="ew"
+            )
 
         for row_idx, item in enumerate(rs.get_sales_return_lines(order_id), start=1):
-            values = [
-                None,
-                f"{item['available_quantity']:g}",
-                f"{item['sold_quantity']:g}",
-                f"{item['unit_price']:,.2f}",
-                rtl(item["product_name"]),
-            ]
-
+            values = [None, f"{item['available_quantity']:g}", f"{item['sold_quantity']:g}", f"{item['unit_price']:,.2f}", rtl(item["product_name"])]
             for col, value in enumerate(values):
                 if value is None:
                     continue
-                ctk.CTkLabel(
-                    self.items_frame,
-                    text=value,
-                    anchor="e",
-                ).grid(row=row_idx, column=col, padx=8, pady=5, sticky="ew")
+                ctk.CTkLabel(self.items_frame, text=value, anchor="e").grid(
+                    row=row_idx, column=col, padx=8, pady=5, sticky="ew"
+                )
 
-            entry = ctk.CTkEntry(
-                self.items_frame,
-                width=110,
-                justify="right",
-            )
+            entry = ctk.CTkEntry(self.items_frame, width=110, justify="right")
             entry.insert(0, "0")
             entry.grid(row=row_idx, column=0, padx=8, pady=5, sticky="ew")
-            self.line_entries[item["order_item_id"]] = {
-                "entry": entry,
-                "available": item["available_quantity"],
-            }
+            self.line_entries[item["order_item_id"]] = {"entry": entry, "available": item["available_quantity"]}
 
     def _save(self):
         self.status_label.configure(text="")
@@ -285,7 +224,7 @@ class SalesReturnsView(ctk.CTkToplevel):
             rs.create_sales_return(
                 order_id,
                 items,
-                reason=self.reason_entry.get().strip(),
+                reason=self._note_logical_text(),
                 return_date=date.today().isoformat(),
             )
         except Exception as exc:
@@ -294,7 +233,4 @@ class SalesReturnsView(ctk.CTkToplevel):
 
         self.reason_entry.delete(0, "end")
         self._search_customer_invoices()
-        self.status_label.configure(
-            text=rtl("تم حفظ مرتجع المبيعات وتحديث المخزون والحسابات"),
-            text_color="#27AE60",
-        )
+        self.status_label.configure(text=rtl("تم حفظ مرتجع المبيعات وتحديث المخزون والحسابات"), text_color="#27AE60")

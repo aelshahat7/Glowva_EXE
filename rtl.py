@@ -20,18 +20,15 @@ def contains_arabic(text):
 
 
 def format_date(value):
-    """Convert app/imported date values to DD/MM/YYYY for display."""
     if value is None:
         return "—"
     if isinstance(value, datetime):
         return value.strftime("%d/%m/%Y")
     if isinstance(value, date):
         return value.strftime("%d/%m/%Y")
-
     text = str(value).strip()
     if not text:
         return "—"
-
     try:
         serial = float(text.replace(",", ""))
         if 20000 <= serial <= 80000:
@@ -39,19 +36,11 @@ def format_date(value):
             return (base + timedelta(days=serial)).strftime("%d/%m/%Y")
     except (TypeError, ValueError, OverflowError):
         pass
-
     formats = (
-        "%Y-%m-%d",
-        "%Y-%m-%d %H:%M:%S",
-        "%Y-%m-%d %H:%M:%S.%f",
-        "%Y-%m-%dT%H:%M:%S",
-        "%Y-%m-%dT%H:%M:%S.%f",
-        "%d/%m/%Y",
-        "%d-%m-%Y",
-        "%m/%d/%Y",
-        "%m-%d-%Y",
+        "%Y-%m-%d", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S.%f",
+        "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%S.%f",
+        "%d/%m/%Y", "%d-%m-%Y", "%m/%d/%Y", "%m-%d-%Y",
     )
-
     for fmt in formats:
         try:
             return datetime.strptime(text, fmt).strftime("%d/%m/%Y")
@@ -64,16 +53,12 @@ def rtl(text):
     if text is None:
         return ""
     text = str(text)
-    if not text.strip():
-        return ""
-    if not contains_arabic(text):
+    if not text.strip() or not contains_arabic(text):
         return text
     if not re.search(r"[A-Za-z0-9]", text):
         return " ".join(reversed(text.split()))
     parts = text.split()
-    if len(parts) <= 1:
-        return text
-    return " ".join(reversed(parts))
+    return text if len(parts) <= 1 else " ".join(reversed(parts))
 
 
 def unrtl(text):
@@ -83,10 +68,12 @@ def unrtl(text):
 
 
 # ==========================================================
-# Global Cut / Copy / Paste for native Tk Entry/Text widgets
+# Global Cut / Copy / Paste for Tkinter + CustomTkinter
 # ==========================================================
 
 _context_menus = {}
+_text_edit_bindings_installed = False
+_original_tk_init = tk.Tk.__init__
 
 
 def _is_editable(widget):
@@ -178,27 +165,25 @@ def _show_context_menu(event):
     return "break"
 
 
-_TEXT_EDIT_BINDINGS_INSTALLED = False
-
-
-def _install_text_edit_bindings():
-    global _TEXT_EDIT_BINDINGS_INSTALLED
-    if _TEXT_EDIT_BINDINGS_INSTALLED:
+def _install_text_edit_bindings(root):
+    global _text_edit_bindings_installed
+    if _text_edit_bindings_installed:
         return
-
-    tk.Entry.bind_class("Entry", "<Control-c>", lambda e: _copy_widget(e.widget), add="+")
-    tk.Entry.bind_class("Entry", "<Control-x>", lambda e: _cut_widget(e.widget), add="+")
-    tk.Entry.bind_class("Entry", "<Control-v>", lambda e: _paste_widget(e.widget), add="+")
-    tk.Entry.bind_class("Entry", "<Control-a>", lambda e: _select_all_widget(e.widget), add="+")
-    tk.Entry.bind_class("Entry", "<Button-3>", _show_context_menu, add="+")
-
-    tk.Text.bind_class("Text", "<Control-c>", lambda e: _copy_widget(e.widget), add="+")
-    tk.Text.bind_class("Text", "<Control-x>", lambda e: _cut_widget(e.widget), add="+")
-    tk.Text.bind_class("Text", "<Control-v>", lambda e: _paste_widget(e.widget), add="+")
-    tk.Text.bind_class("Text", "<Control-a>", lambda e: _select_all_widget(e.widget), add="+")
-    tk.Text.bind_class("Text", "<Button-3>", _show_context_menu, add="+")
-
-    _TEXT_EDIT_BINDINGS_INSTALLED = True
+    root.bind_all("<Control-c>", lambda e: _copy_widget(e.widget), add="+")
+    root.bind_all("<Control-x>", lambda e: _cut_widget(e.widget), add="+")
+    root.bind_all("<Control-v>", lambda e: _paste_widget(e.widget), add="+")
+    root.bind_all("<Control-a>", lambda e: _select_all_widget(e.widget), add="+")
+    root.bind_all("<Button-3>", _show_context_menu, add="+")
+    _text_edit_bindings_installed = True
 
 
-_install_text_edit_bindings()
+def _patched_tk_init(self, *args, **kwargs):
+    _original_tk_init(self, *args, **kwargs)
+    _install_text_edit_bindings(self)
+
+
+# main.py imports rtl before creating the root. Hook Tk.__init__ so the
+# bindings are installed automatically for the whole application.
+if not getattr(tk.Tk.__init__, "_glowva_text_edit_hook", False):
+    _patched_tk_init._glowva_text_edit_hook = True
+    tk.Tk.__init__ = _patched_tk_init

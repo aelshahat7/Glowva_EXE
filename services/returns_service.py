@@ -13,7 +13,6 @@ import sqlite3
 import database as db
 
 
-
 def initialize_returns():
     """Create return tables and add return-adjustment flags to line items."""
     with db.get_connection() as conn:
@@ -72,10 +71,10 @@ def _ensure_column(conn, table, column):
         )
 
 
-def list_sales_invoices(limit=200):
+def list_sales_invoices(limit=200, customer_id=None):
+    """List sales invoices, optionally filtered to one customer."""
     with db.get_connection() as conn:
-        rows = conn.execute(
-            """
+        sql = """
             SELECT o.id, o.order_date,
                    COALESCE(c.name, '') AS customer_name,
                    COALESCE(SUM(oi.quantity * oi.unit_price), 0) - o.discount AS total
@@ -83,13 +82,21 @@ def list_sales_invoices(limit=200):
             LEFT JOIN customers c ON c.id = o.customer_id
             LEFT JOIN order_items oi
               ON oi.order_id = o.id AND oi.is_return_adjustment = 0
+            WHERE 1 = 1
+        """
+        params = []
+        if customer_id is not None:
+            sql += " AND o.customer_id = ?"
+            params.append(customer_id)
+
+        sql += """
             GROUP BY o.id
             HAVING COALESCE(SUM(oi.quantity * oi.unit_price), 0) > 0
             ORDER BY o.id DESC
             LIMIT ?
-            """,
-            (limit,),
-        ).fetchall()
+        """
+        params.append(limit)
+        rows = conn.execute(sql, params).fetchall()
         return [dict(r) for r in rows]
 
 
@@ -128,7 +135,6 @@ def get_sales_return_lines(order_id):
 
 
 def create_sales_return(order_id, items, reason="", return_date=None):
-    """items: [{order_item_id, quantity}]"""
     initialize_returns()
     return_date = return_date or date.today().isoformat()
 
@@ -192,9 +198,6 @@ def create_sales_return(order_id, items, reason="", return_date=None):
                 """,
                 (return_id, row["id"], row["product_id"], qty, row["unit_price"], row["cost_price"]),
             )
-
-            # Negative line on the original invoice transaction. Existing
-            # inventory/sales/profit calculations therefore include the return.
             conn.execute(
                 """
                 INSERT INTO order_items
@@ -262,7 +265,6 @@ def get_purchase_return_lines(purchase_id):
 
 
 def create_purchase_return(purchase_id, items, reason="", return_date=None):
-    """items: [{purchase_item_id, quantity}]"""
     initialize_returns()
     return_date = return_date or date.today().isoformat()
 
@@ -324,9 +326,6 @@ def create_purchase_return(purchase_id, items, reason="", return_date=None):
                 """,
                 (return_id, row["id"], row["product_id"], qty, row["unit_price"]),
             )
-
-            # Negative line on the original purchase transaction. Existing
-            # inventory/purchases/profit/cash calculations therefore include it.
             conn.execute(
                 """
                 INSERT INTO purchase_items

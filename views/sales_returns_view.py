@@ -109,7 +109,7 @@ class SalesReturnsView(ctk.CTkToplevel):
 
         self.reason_entry = ctk.CTkEntry(
             frame,
-            placeholder_text=rtl("سبب المرتجع (اختياري)"),
+            placeholder_text="سبب المرتجع (اختياري)",
             justify="right",
         )
         self.reason_entry.grid(row=0, column=1, padx=10, sticky="ew")
